@@ -262,6 +262,8 @@ requires jQuery 1.6+
 			end += _ONE_DAY;
 		}
 
+		list.append('<li>None</li>');
+
 		for (var i=start; i <= end; i += settings.step*60) {
 			var timeInt = i%_ONE_DAY;
 			var row = $('<li />');
@@ -485,6 +487,11 @@ requires jQuery 1.6+
 	function _int2time(seconds, format)
 	{
 		var time = new Date(_baseDate.valueOf() + (seconds*1000));
+
+		if (isNaN(time.getTime())) {
+			return;
+		}
+
 		var output = '';
 
 		for (var i=0; i<format.length; i++) {
