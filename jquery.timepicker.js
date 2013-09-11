@@ -250,6 +250,26 @@ requires jQuery 1.7+
 			}
 
 			self.removeData('timepicker-list');
+		},
+
+		parseTime: function(timeString)
+		{
+			timeString = timeString.toLowerCase();
+			// try to parse time input
+			var time = timeString.match(/(?:^|\s+)([0-1]?[0-9]|2[0-3])(?:\s*:?\s*([0-5][0-9]))?(?:\s*:?\s*([0-5][0-9]))?(?:\s*([pa])m?)?\s*$/);
+			if (!time) {
+				return null;
+			}
+
+			var hours = parseInt(time[1], 10);
+			if (time[4]) {
+				hours = hours == 12 ? 0 : hours;
+				hours += time[4] == 'p' ? 12 : 0;
+			}
+			var minutes = time[2]*1 || 0;
+			var seconds = time[3]*1 || 0;
+
+			return {hours: hours, minutes: minutes, seconds: seconds, time: time[0]};
 		}
 	};
 
@@ -833,47 +853,11 @@ requires jQuery 1.7+
 		if (!timeString || timeString+0 == timeString) return timeString;
 
 		if (typeof(timeString) == 'object') {
-			timeString = timeString.getHours()+':'+_pad2(timeString.getMinutes())+':'+_pad2(timeString.getSeconds());
+			return timeString.getHours()*3600 + timeString.getMinutes() * 60 + timeString.getSeconds();
 		}
 
-		timeString = timeString.toLowerCase();
-
-		var d = new Date(0);
-		var time;
-
-		// try to parse time input
-		if (timeString.indexOf(":") === -1) {
-			// no colon present
-			time = timeString.match(/^([0-9]):?([0-5][0-9])?:?([0-5][0-9])?\s*([pa]?)m?$/);
-
-			if (!time) {
-				time = timeString.match(/^([0-2][0-9]):?([0-5][0-9])?:?([0-5][0-9])?\s*([pa]?)m?$/);
-			}
-		} else {
-			time = timeString.match(/^(\d{1,2})(?::([0-5][0-9]))?(?::([0-5][0-9]))?\s*([pa]?)m?$/);
-		}
-
-		if (!time) {
-			return null;
-		}
-
-		var hour = parseInt(time[1]*1, 10);
-		var hours;
-
-		if (time[4]) {
-			if (hour == 12) {
-				hours = (time[4] == 'p') ? 12 : 0;
-			} else {
-				hours = (hour + (time[4] == 'p' ? 12 : 0));
-			}
-
-		} else {
-			hours = hour;
-		}
-
-		var minutes = ( time[2]*1 || 0 );
-		var seconds = ( time[3]*1 || 0 );
-		return hours*3600 + minutes*60 + seconds;
+		var time = methods.parseTime(timeString);
+		return time ? time.hours*3600 + time.minutes*60 + time.seconds : null;
 	}
 
 	function _pad2(n) {
@@ -887,4 +871,12 @@ requires jQuery 1.7+
 		else if(typeof method === "object" || !method) { return methods.init.apply(this, arguments); }
 		else { $.error("Method "+ method + " does not exist on jQuery.timepicker"); }
 	};
+
+    // Global timepicker methods
+
+    $.timepicker = function(method)
+    {
+        if(method === 'parseTime') { return methods[method].apply(this, Array.prototype.slice.call(arguments, 1)); }
+        else { $.error("Method "+ method + " does not exist on jQuery.timepicker"); }
+    }
 }));
