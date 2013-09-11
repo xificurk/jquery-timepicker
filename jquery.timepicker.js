@@ -318,11 +318,11 @@ requires jQuery 1.7+
 			durStart = settings.durationTime;
 		}
 		var start = (settings.minTime !== null) ? settings.minTime : 0;
-		var end = (settings.maxTime !== null) ? settings.maxTime : (start + _ONE_DAY - 1);
+		var end = (settings.maxTime !== null) ? settings.maxTime : (_ONE_DAY - 1);
 
 		if (end <= start) {
-			// make sure the end time is greater than start time, otherwise there will be no list to show
-			end += _ONE_DAY;
+			// There are no valid times.
+			return;
 		}
 
 		var dr = settings.disableTimeRanges;
