@@ -111,7 +111,7 @@ requires jQuery 1.7+
 				list = self.data('timepicker-list');
 			}
 
-			if (list.is(':visible')) {
+			if (!list || list.is(':visible')) {
 				return;
 			}
 
@@ -195,6 +195,8 @@ requires jQuery 1.7+
 
 			self.data('timepicker-settings', settings);
 
+			_formatValue.call(self.get(0));
+
 			if (list) {
 				list.remove();
 				self.data('timepicker-list', false);
@@ -225,6 +227,7 @@ requires jQuery 1.7+
 			var prettyTime = _int2time(_time2int(value), self.data('timepicker-settings').timeFormat);
 
 			_setTimeValue(self, prettyTime);
+			_formatValue.call(self.get(0));
 			if (self.data('timepicker-list')) {
 				_setSelected(self, self.data('timepicker-list'));
 			}
@@ -500,7 +503,7 @@ requires jQuery 1.7+
 
 	function _formatValue()
 	{
-		if (this.value === '') {
+		if (this.value === '' || this.value === undefined) {
 			return;
 		}
 
@@ -521,10 +524,14 @@ requires jQuery 1.7+
 		var settings = self.data('timepicker-settings');
 		var rangeError = false;
 		// check that the time in within bounds
-		if (settings.minTime !== null && seconds < settings.minTime) {
+		if (settings.minTime !== null && settings.maxTime && settings.maxTime < settings.minTime) {
 			rangeError = true;
-		} else if (settings.maxTime !== null && seconds > settings.maxTime) {
-			rangeError = true;
+		}
+		if (settings.minTime !== null) {
+			seconds = Math.max(seconds, settings.minTime);
+		}
+		if (settings.maxTime !== null) {
+			seconds = Math.min(seconds, settings.maxTime);
 		}
 
 		// check that time isn't within disabled time ranges
@@ -550,7 +557,7 @@ requires jQuery 1.7+
 		var prettyTime = _int2time(seconds, settings.timeFormat);
 
 		if (rangeError) {
-			if (_setTimeValue(self, prettyTime, 'error')) {
+			if (_setTimeValue(self, '', 'error')) {
 				self.trigger('timeRangeError');
 			}
 		} else {
@@ -872,11 +879,11 @@ requires jQuery 1.7+
 		else { $.error("Method "+ method + " does not exist on jQuery.timepicker"); }
 	};
 
-    // Global timepicker methods
+	// Global timepicker methods
 
-    $.timepicker = function(method)
-    {
-        if(method === 'parseTime') { return methods[method].apply(this, Array.prototype.slice.call(arguments, 1)); }
-        else { $.error("Method "+ method + " does not exist on jQuery.timepicker"); }
-    }
+	$.timepicker = function(method)
+	{
+		if(method === 'parseTime') { return methods[method].apply(this, Array.prototype.slice.call(arguments, 1)); }
+		else { $.error("Method "+ method + " does not exist on jQuery.timepicker"); }
+	}
 }));
